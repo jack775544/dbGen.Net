@@ -9,7 +9,7 @@ namespace dbGen
     public class DatabaseColumn
     {
         /// The name of the column
-        public string Name {get; set;}
+        public string ColumnName {get; set;}
         /// The generator of the data for the column
         public IDataGenerator Generator {get; set;}
         /// Is this column a primary key
@@ -26,7 +26,7 @@ namespace dbGen
         public DatabaseColumn(string name, IDataGenerator dataGenerator)
         {
             /// Set name and generator
-            Name = name;
+            ColumnName = name;
             Generator = dataGenerator;
 
             /// The table starts off empty
@@ -41,7 +41,7 @@ namespace dbGen
 
         public override string ToString()
         {
-            return "{" + Name + "}";
+            return "{" + ColumnName + "}";
         }
     }
 
