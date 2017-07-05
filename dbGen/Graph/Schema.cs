@@ -34,6 +34,13 @@ namespace dbGen
 
         public IEnumerable<string> Lines()
         {
+            foreach (var t in OrderedTables)
+            {
+                foreach (var r in t.SQLRows())
+                {
+                    yield return r;
+                }
+            }
             yield break;
         }
 
