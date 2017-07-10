@@ -11,9 +11,28 @@ namespace dbGen.Controllers
     {
         // GET api/values
         [HttpGet]
-        public IEnumerable<string> Get()
+        public string Get()
         {
-            return new string[] { "value1", "value2" };
+            var cols = new List<DatabaseColumn>();
+            cols.Add(new DatabaseColumn("id", new OrderedIntegerDataGenerator()));
+            cols.Add(new DatabaseColumn("b", new RandomIntegerDataGenerator(0, 1000)));
+            cols[0].PrimaryKey = true;
+            DatabaseTable t = new DatabaseTable("table_a", 100, cols);
+
+            var cols2 = new List<DatabaseColumn>();
+            cols2.Add(new DatabaseColumn("id2", new OrderedIntegerDataGenerator()));
+            cols2.Add(new ForeignKeyColumn("d", t, cols[0], true));
+            cols2[0].PrimaryKey = true;
+            DatabaseTable c = new DatabaseTable("table_b", 100, cols2);
+
+            var schema = new Schema(new List<DatabaseTable>{t, c});
+            var result = schema.GetAllSQLDDLStatements();
+            foreach (var line in schema.Lines())
+            {
+                result += line;
+            }
+            
+            return result;
         }
 
         // GET api/values/5

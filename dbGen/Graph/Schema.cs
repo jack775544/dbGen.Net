@@ -22,14 +22,14 @@ namespace dbGen
         }
         private List<DatabaseTable> OrderedTables;
 
-        public Schema(List<DatabaseTable> tables)
+        public Schema(IEnumerable<DatabaseTable> tables)
         {
             Tables = new List<DatabaseTable>(tables);
             OrderTables();
         }
 
         public string GetAllSQLDDLStatements(){
-            return String.Join($"{Environment.NewLine}", Tables.Select(x => x.GetSQLCreateTableStatements()));
+            return String.Join($"{Environment.NewLine}", Tables.Select(x => x.GetSQLCreateTableStatements())) + Environment.NewLine;
         }
 
         public IEnumerable<string> Lines()
@@ -53,8 +53,11 @@ namespace dbGen
             {
                 return;
             }
+            OrderedTables = new List<DatabaseTable>();
             var ts = new List<DatabaseTable>(Tables);
-            for (var i = 0; i < ts.Count; i++)
+            //for (var i = 0; i < ts.Count; i++)
+            var i = 0;
+            while (i < ts.Count)
             {
                 var done = false;
                 var j = i;

@@ -66,5 +66,12 @@ namespace dbGen
             ReferenceTable = referenceTable;
             ReferenceColumn = referenceColumn;
         }
+
+        public ForeignKeyColumn(string name, DatabaseTable referenceTable, DatabaseColumn referenceColumn, bool randomValue) : base(name, null)
+        {
+            ReferenceTable = referenceTable;
+            ReferenceColumn = referenceColumn;
+            RandomValue = randomValue;
+        }
     }
 }

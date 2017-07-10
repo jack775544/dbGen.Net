@@ -28,14 +28,15 @@ namespace dbGen
         public int Length {get; private set;}
         /// Current position in the table for the generator
         public int Current {get; private set;}
-        
+        private Random rng = new Random();
+
         /// The constructor for the database table
         public DatabaseTable(string tableName, int tableLength, List<DatabaseColumn> columns)
         {
             Current = 0;
             TableName = tableName;
             TableLength = tableLength;
-            if (columns.Select(x => x.ColumnName).ToHashSet().Count() == columns.Count())
+            if (columns.Select(x => x.ColumnName).ToHashSet().Count() != columns.Count())
             {
                 throw new InvalidOperationException("The columns have duplicate names");
             }
@@ -63,14 +64,47 @@ namespace dbGen
                 .ToList();
         }
 
-        private IEnumerable<List<(String, String)>> Rows()
+        private IEnumerable<List<(string, string)>> Rows()
         {
             if (Current == Length)
             {
                 yield break;
             }
             Current++;
-            yield return Columns.Select(x => (x.ColumnName, x.Generator.Opener + x.Generator.next() + x.Generator.Closer)).ToList();
+            for (var i = 0; i < TableLength; i++)
+            {
+                var result = new List<(string, string)>();
+                foreach (var c in Columns)
+                {
+                    if (c is ForeignKeyColumn)
+                    {
+                        var fc = (ForeignKeyColumn) c;
+                        if (fc.RandomValue == true)
+                        {
+                            result.Add((
+                                fc.ColumnName, 
+                                fc.ReferenceColumn.Generator.Opener + 
+                                fc.ReferenceColumn.Generator.Data[rng.Next(0, fc.ReferenceColumn.Generator.Data.Count)] +
+                                fc.ReferenceColumn.Generator.Closer
+                            ));
+                        }
+                        else
+                        {
+                            result.Add((
+                                fc.ColumnName, 
+                                fc.ReferenceColumn.Generator.Opener + 
+                                fc.ReferenceColumn.Generator.Data[Current % fc.ReferenceColumn.Generator.Data.Count] +
+                                fc.ReferenceColumn.Generator.Closer
+                            ));
+                        }
+                    }
+                    else
+                    {
+                        result.Add((c.ColumnName, c.Generator.next()));
+                    }
+                }
+                yield return result;
+            }
         }
 
         public IEnumerable<string> SQLRows()
@@ -124,7 +158,7 @@ namespace dbGen
             ADD CONSTRAINT UN_column1 UNIQUE (column1); 
              */
             var line = Environment.NewLine;
-            var result = $"CREATE TABLE {TableName}({line}";
+            var result = $"CREATE TABLE {TableName}(";
             var constraintResult = "";
             foreach (var c in Columns)
             {
@@ -133,13 +167,13 @@ namespace dbGen
                 {
                     // Foreign Keys need the type of the value they are referencing
                     var fc = (ForeignKeyColumn) c;
-                    result += $"    {fc.ColumnName} {fc.ReferenceColumn.Generator.DatabaseTypeString}{line}";
+                    result += $"{line}    {fc.ColumnName} {fc.ReferenceColumn.Generator.DatabaseTypeString},";
                     constraintResult += $"ALTER TABLE {TableName}{line}" +
                         $"ADD CONSTRAINT FK_{fc.ColumnName}_TO_{fc.ReferenceTable.TableName}_{fc.ReferenceColumn.ColumnName}{line}" +
                         $"FOREIGN KEY ({fc.ColumnName}) REFERENCES {fc.ReferenceTable.TableName} ({fc.ReferenceColumn.ColumnName});{line}";
                 } else {
                     // Non foreign keys can use their own type
-                    result += $"    {c.ColumnName} {c.Generator.DatabaseTypeString}{line}";
+                    result += $"{line}    {c.ColumnName} {c.Generator.DatabaseTypeString},";
                 }
 
                 // Do PK check next
@@ -165,8 +199,9 @@ namespace dbGen
                         $"ADD CONSTRAINT UN_column1 UNIQUE ({c.ColumnName});{line}";
                 }
             }
-            result += $");{line}";
-            return result;
+            result = result.TrimEnd(',');
+            result += $"{line});{line}";
+            return result + constraintResult;
         }
 
         public override string ToString()
