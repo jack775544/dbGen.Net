@@ -29,7 +29,7 @@ namespace dbGen
         }
 
         public string GetAllSQLDDLStatements(){
-            return String.Join($"{Environment.NewLine}", Tables.Select(x => x.GetSQLCreateTableStatements())) + Environment.NewLine;
+            return String.Join(Environment.NewLine, Tables.Select(x => x.GetSQLCreateTableStatements())) + Environment.NewLine;
         }
 
         public IEnumerable<string> Lines()
