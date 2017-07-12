@@ -3,6 +3,19 @@ using System.Collections.Generic;
 
 namespace dbGen
 {
+    public class DataGenerator
+    {
+        public Dictionary<string, IDataGenerator> Mappings
+        {
+            get
+            {
+                var map = new Dictionary<string, IDataGenerator>();
+                return map;
+            }
+        }
+
+    }
+
     public interface IDataGenerator
     {
         string Opener {get;}

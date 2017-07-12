@@ -44,8 +44,9 @@ namespace dbGen.Controllers
 
         // POST api/values
         [HttpPost]
-        public void Post([FromBody]string value)
+        public void Post([FromBody]TableStructure[] tables)
         {
+            
         }
 
         // PUT api/values/5
