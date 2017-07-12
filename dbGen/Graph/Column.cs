@@ -18,20 +18,12 @@ namespace dbGen
         public bool Unique {get; set;}
         /// Is the column not null
         public bool NotNull {get; set;}
-        /// The string version of the data of this column
-        public List<string> Data {get; set;}
-        /// Has this column had it's data already set
-        public bool HasData {get; set;}
         
         public DatabaseColumn(string name, IDataGenerator dataGenerator)
         {
             /// Set name and generator
             ColumnName = name;
             Generator = dataGenerator;
-
-            /// The table starts off empty
-            Data = null;
-            HasData = false;
 
             /// By default no special properties
             PrimaryKey = false;
